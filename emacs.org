@@ -1019,6 +1019,10 @@ For all the programming modes, we want to apply a few defaults.
 
 (add-hook 'emacs-list-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
 #+END_SRC
+**** Org Mode
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+#+END_SRC
 ** Clojure
 #+BEGIN_SRC emacs-lisp
 (eval-after-load 'clojure-mode

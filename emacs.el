@@ -797,6 +797,8 @@
 
 (add-hook 'emacs-list-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
 
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
 (eval-after-load 'clojure-mode
   '(progn
      (defun jp:clojure-mode-defaults ()
