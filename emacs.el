@@ -759,6 +759,7 @@
         (helm-mini))
     ;; fall back to helm-mini if an error occurs (usually in projectile-project-root)
     (error (helm-mini))))
+(helm-mode 1)
 
 (defun jp:magit-log-edit-mode-hook ()
   (setq fill-column 72)

@@ -947,6 +947,7 @@ We're using the following files for our agendas.  Each one of these files probab
         (helm-mini))
     ;; fall back to helm-mini if an error occurs (usually in projectile-project-root)
     (error (helm-mini))))
+(helm-mode 1)
 #+END_SRC
 **** Cheat sheet
 | action                      | command     |
