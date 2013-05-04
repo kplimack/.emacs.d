@@ -16,6 +16,7 @@
 (unless (server-running-p) (server-start))
 
 (require 'package)
+
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
@@ -26,22 +27,22 @@
 
 (defvar my-packages
   '(
-    ;; Editing
+    ;; editing
     auto-complete
     popup
     fuzzy
 
-    ;; Themes
+    ;; themes
     cyberpunk-theme
     color-theme-solarized
 
     ;; org
     htmlize
 
-    ;; git
+    ;; git stuff
     magit
 
-    ;; general lissthsspp
+    ;; general lisp
     paredit
     rainbow-delimiters
     rainbow-mode
@@ -67,9 +68,6 @@
     ;; modes
     markdown-mode
     yaml-mode
-
-    ;; json
-    js2-mode
     json-mode
 
     ;; ruby
@@ -77,15 +75,11 @@
     ruby-end
     ruby-tools
     inf-ruby
-    yari
-
-    ;; emacs helpers
-    diminish
-
-    ) "A list of packages to ensure are installed at launch.")
+    yari)
+  "A list of packages to ensure are installed at launch.")
 
 (dolist (p my-packages)
-  (when  (not (package-installed-p p))
+  (when (not (package-installed-p p))
     (package-install p)))
 
 (setq initial-scratch-message "")
@@ -98,8 +92,8 @@
 
 (show-paren-mode 1)
 
+(set-default 'indent-tabs-mode nil)
 (set-default 'indicate-empty-lines t)
-(set-default 'indent-tab-mode nil)
 
 ;; nice scrolling
 (setq scroll-margin 0
@@ -111,10 +105,10 @@
 (column-number-mode t)
 (size-indication-mode t)
 
+;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;; seed the random number generator
-(random t)
+(random t) ;; Seed the random-number generator
 
 ;; show-paren-mode: subtle highlighting of matching parens (global-mode)
 (show-paren-mode +1)
@@ -124,16 +118,16 @@
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
 
-;; save cursor position within files
+; save cursor position within files
 (require 'saveplace)
 (setq save-place-file (expand-file-name "saveplace" jp:savefile-dir))
 (setq-default save-place t)
 
-;; save minibuffer history across sessions
+; save minibuffer history across sessions
 (setq savehist-file (expand-file-name "savehist" jp:savefile-dir))
 (savehist-mode 1)
 
-;; Don't clutter with files~ #file#, backup, etc
+;; Don't clutter with files~, #file#, backup, etc
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq auto-save-list-file-prefix nil)
@@ -144,12 +138,15 @@
 (setq bookmark-default-file (expand-file-name "bookmarks" jp:savefile-dir))
 (setq smex-save-file (expand-file-name "smex-items" jp:savefile-dir))
 
-;; some defaults
+;; sane defaults
 (prefer-coding-system 'utf-8)
 (set-language-environment 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
+
+; pick up changes to files on disk automatically (ie, after git pull)
+(global-auto-revert-mode 1)
 
 ; wrap lines in a tasteful way
 (global-visual-line-mode 1)
@@ -161,7 +158,7 @@
   (other-window -1))
 
 (defun jp:insert-date ()
-  "Insert a time-stamp according to the locale's date and time format."
+  "Insert a time-stamp according to locale's date and time format."
   (interactive)
   (insert (format-time-string "%c" (current-time))))
 
@@ -170,10 +167,19 @@
   (interactive)
   (browse-url
    (concat
-    "http://google.com/search?ie=utf-8&oe=utf-8&q="
-    (url-hexift-string (if mark-active
-                           (buffer-substring (region-beginning) (region-end))
-                         (read-string "Google: "))))))
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q="
+    (url-hexify-string (if mark-active
+         (buffer-substring (region-beginning) (region-end))
+       (read-string "Google: "))))))
+
+(defun jp:pretty-lambdas ()
+  (font-lock-add-keywords
+   nil `(("(?\\(lambda\\>\\)"
+          (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                    ,(make-char 'greek-iso8859-7 107))
+                    nil))))))
+
+(add-hook 'prog-mode-hook 'jp:pretty-lambdas)
 
 (defun iwb ()
   "indent whole buffer"
@@ -181,6 +187,64 @@
   (delete-trailing-whitespace)
   (indent-region (point-min) (point-max) nil)
   (untabify (point-min) (point-max)))
+
+;; Move lines
+;; - from http://www.emacswiki.org/emacs/MoveLine
+
+(defun move-line (n)
+  "Move the current line up or down by N lines."
+  (interactive "p")
+  (setq col (current-column))
+  (beginning-of-line) (setq start (point))
+  (end-of-line) (forward-char) (setq end (point))
+  (let ((line-text (delete-and-extract-region start end)))
+    (forward-line n)
+    (insert line-text)
+    ;; restore point to original column in moved line
+    (forward-line -1)
+    (forward-char col)))
+
+(defun move-line-up (n)
+  "Move the current line up by N lines."
+  (interactive "p")
+  (move-line (if (null n) -1 (- n))))
+
+(defun move-line-down (n)
+  "Move the current line down by N lines."
+  (interactive "p")
+  (move-line (if (null n) 1 n)))
+
+(global-set-key (kbd "M-<up>") 'move-line-up)
+(global-set-key (kbd "M-<down>") 'move-line-down)
+
+;; Align Equal Signs
+;; corrected form from:
+;;   http://stackoverflow.com/questions/3633120/emacs-hotkey-to-align-equal-signs
+(defun align-equal-signs (begin end)
+  "Align region to equal signs"
+  (interactive "r")
+  (align-regexp begin end "\\(\\s-*\\)=" 1 1 ))
+
+;;; Stefan Monnier <foo at acm.org>. It is the opposite of
+;;; fill-paragraph. Takes a multi-line paragraph and makes
+;;; it into a single line of text.
+(defun unfill-paragraph ()
+  (interactive)
+  (let ((fill-column (point-max)))
+    (fill-paragraph nil)))
+
+(dolist (command '(yank yank-pop))
+  (eval `(defadvice ,command (after indent-region activate)
+           (and (not current-prefix-arg)
+                (member major-mode '(emacs-lisp-mode lisp-mode
+                                                     clojure-mode    scheme-mode
+                                                     haskell-mode    ruby-mode
+                                                     rspec-mode      python-mode
+                                                     c-mode          c++-mode
+                                                     objc-mode       latex-mode
+                                                     plain-tex-mode))
+                (let ((mark-even-if-inactive transient-mark-mode))
+                  (indent-region (region-beginning) (region-end) nil))))))
 
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
@@ -190,25 +254,30 @@
 
 (setq ring-bell-function 'ignore)
 
-;; no fringe (scroll bars on the left side of screen)
+;; no fringe (small bars on the left side of the screen)
 (if (fboundp 'fringe-mode)
     (fringe-mode 0))
 
 ;; no menu bar
 (menu-bar-mode -1)
 
-;; the blinking cursor  annoying
+;; the blinking cursor is nothing, but an annoyance
 (blink-cursor-mode -1)
 
-;; directory for extra themese
+;; directory for extra themes
 (add-to-list 'custom-theme-load-path (expand-file-name "themes" jp:personal-dir))
 
-;; load the default theme
-;;  (load-theme 'naquadah t)
-;;  (load-theme 'cyberpunk t)
+;; load our default theme
+(load-theme 'naquadah t)
 
-;; no visual bell
-(setq visual-bell nil)
+(custom-set-faces
+ '(org-level-1 ((t (:height 1.0))))
+ '(org-level-2 ((t (:height 1.0))))
+ '(org-level-3 ((t (:height 1.0))))
+ '(org-document-title ((t (:height 1.0)))))
+
+;; nop no visual bell
+(setq visible-bell nil)
 (setq whitespace-style '(face trailing tabs))
 
 ;; set default position
@@ -227,13 +296,13 @@
 (set-face-attribute 'default nil :height my-font-height)
 (set-face-attribute 'default nil :family my-font-family)
 
-;; more useful fram title, that shows either  a file or a
-;; buffer name (if the buffer isnt' visiting a file)
+;; more useful frame title, that show either a file or a
+;; buffer name (if the buffer isn't visiting a file)
 (setq frame-title-format
       '((:eval (if (buffer-file-name) (abbreviate-file-name (buffer-file-name)) "%b"))))
 
-;; diminish modeline clutter
-(require 'diminish)
+;; Diminish modeline clutter
+;;(require 'diminish)
 
 ;; general emacs stuff
 (global-set-key (kbd "C-x C-b") 'ibuffer)
@@ -253,17 +322,21 @@
 (global-set-key (kbd "C-c +") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-c _") 'shrink-window-horizontally)
 
+;; switch between dictionaries for aspell
+(global-set-key (kbd "C-c C-f") 'jp:aspell-french)
+(global-set-key (kbd "C-c C-e") 'jp:aspell-english)
+
+;; split
+(global-set-key (kbd "C-c C-t") 'jp:split-window-vertically-for-eshell)
+
 ;; google it
 (global-set-key (kbd "C-c C-g") 'jp:google)
 
-;; start eshell or switch to it if active
+;; Start eshell or switch to it if it's active.
 (global-set-key (kbd "C-x m") 'eshell)
 
-;; start an eshell even if one is active
-(global-set-key (kbd "C-x M")
-                (lambda ()
-                  (interactive)
-                  (eshell t)))
+;; Start a new eshell even if one is active.
+(global-set-key (kbd "C-x M") (lambda () (interactive) (eshell t)))
 
 ;; Completion that uses many different methods to find options.
 (global-set-key (kbd "M-/") 'hippie-expand)
@@ -272,16 +345,9 @@
 (define-key global-map (kbd "C-+") 'text-scale-increase)
 (define-key global-map (kbd "C--") 'text-scale-decrease)
 
-;; Window switching (C-x o goes to the next window)
-(global-set-key (kbd "C-x O")
-                (lambda ()
-                  (interactive)
-                  (other-window -1))) ;; back one
-
-(global-set-key (kbd "C-x C-o")
-                (lambda ()
-                  (interactive)
-                  (other-window 2))) ;; foward 2
+;; Window switching. (C-x o goes to the next window)
+(global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
+(global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
 
 ;; M-S-6 is awkward
 (global-set-key (kbd "C-c q") 'join-line)
@@ -289,15 +355,18 @@
 ;; eval the buffer
 (global-set-key (kbd "C-c v") 'eval-buffer)
 
-;; ELPA FIXME BROKEN!
+;; ELPA FIXME broken!
 (global-set-key (kbd "C-c p") 'package-list-packages)
 
 (global-set-key (kbd "C-c H") 'jp:helm-project)
 (global-set-key (kbd "C-c h") 'helm-mini)
 
 ;; org
-;;(define-key global "\C-cc" 'org-capture)
-;;(define-key global "\C-ca" 'org-agenda)
+(define-key global-map "\C-cc" 'org-capture)
+(define-key global-map "\C-ca" 'org-agenda)
+
+;; helm
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
 
 ;; movement
 (global-set-key (kbd "C-x O") 'jp:back-window)
@@ -312,8 +381,8 @@
 (ac-config-default)
 (ac-flyspell-workaround)
 
-;; the default dictionary is good enough for meow
-;; (add-to-list 'ac-dictionary-dictionaries (concat (live-pack-lib-dir) "auto-complete/dict"))
+;; the default dictionary is good enough for now
+;;(add-to-list 'ac-dictionary-directories (concat (live-pack-lib-dir) "auto-complete/dict"))
 (setq ac-comphist-file (concat jp:savefile-dir "/" "ac-comphist.dat"))
 
 (global-auto-complete-mode t)
@@ -329,7 +398,7 @@
 
 (set-default 'ac-sources
              '(ac-source-dictionary
-               ac-source-works-in-buffer
+               ac-source-words-in-buffer
                ac-source-words-in-same-mode-buffers
                ac-source-semantic
                ac-source-yasnippet))
@@ -338,20 +407,20 @@
 (defun jp:dabbrev-friend-buffer (other-buffer)
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 
-(setq dabbrev-friend-buffer 'jp:dabbrev-friend-buffer)
+(setq dabbrev-friend-buffer-function 'jp:dabbrev-friend-buffer)
 
 (dolist
-    (mode '(clojure-mode list-mode python-mode perl-mode cperl-mode haml-mode sass-mode sh-mode geiser-mode))
+    (mode '(clojure-mode lisp-mode python-mode perl-mode cperl-mode haml-mode sass-mode sh-mode geiser-mode))
   (add-to-list 'ac-modes mode))
 
-;; Key triggers
+;;;;Key triggers
 (define-key ac-completing-map (kbd "C-M-n") 'ac-next)
 (define-key ac-completing-map (kbd "C-M-p") 'ac-previous)
 (define-key ac-completing-map "\t" 'ac-complete)
 (define-key ac-completing-map (kbd "M-RET") 'ac-help)
 (define-key ac-completing-map "\r" 'nil)
 
-(setq epg-gpg-program "/usr/bin/gpg")
+(setq epg-gpg-program "/usr/local/bin/gpg")
 
 (load-library "~/.password.el.gpg")
 
@@ -375,7 +444,7 @@
                ("irc" (mode . rcirc-mode))
                ("magit" (name . "\*magit"))
                ("emacs" (or
-                         (mode . emacs-list-mode)
+                         (mode . emacs-lisp-mode)
                          (name . "\*eshell")
                          (name . "^\\*scratch\\*$")
                          (name . "^\\*Messages\\*$")))))))
@@ -385,33 +454,33 @@
              (ibuffer-auto-mode 1)
              (ibuffer-switch-to-saved-filter-groups "default")))
 
-(setq ibuffer-show-empty-filter-froups nil)
+(setq ibuffer-show-empty-filter-groups nil)
 
 (require 'em-smart)
 
-;; smart-display
+;; smart display
 (setq eshell-where-to-jump 'begin)
 (setq eshell-review-quick-commands nil)
 (setq eshell-smart-space-goes-to-end t)
 
 (exec-path-from-shell-initialize)
 
-(setq eshell-dictionary-name (expand-file-name "./" (expand-file-name "eshell" jp:savefile-dir)))
+(setq eshell-directory-name (expand-file-name "./" (expand-file-name "eshell" jp:savefile-dir)))
 
-;;(setq eshell-last-dir-ring-file-name
-;;      (concat eshell-directory-name "lastdir"))
-;;(setq eshell-ask-to-save-last-dir 'always)
+(setq eshell-last-dir-ring-file-name
+      (concat eshell-directory-name "lastdir"))
+(setq eshell-ask-to-save-last-dir 'always)
 
-;;(setq eshell-history-file-name
-;;  (concat eshell-directory-name "history"))
+(setq eshell-history-file-name
+      (concat eshell-directory-name "history"))
 
-(setq eshell-aliases-file (expand-file-name "eshell.alias" jp:personal-dir))
+(setq eshell-aliases-file (expand-file-name "eshell.alias" jp:personal-dir ))
 
 (require 'cl)
 (defun jp:shorten-dir (dir)
-  "Shorten a directory, (almost) like a fish does it"
+  "Shorten a directory, (almost) like fish does it."
   (let ((scount (1- (count ?/ dir))))
-    (dotimes (iscount)
+    (dotimes (i scount)
       (string-match "\\(/\\.?.\\)[^/]+" dir)
       (setq dir (replace-match "\\1" nil nil dir))))
   dir)
@@ -419,7 +488,7 @@
 (setq eshell-prompt-function
       (lambda ()
         (concat
-         (jp:shorten-dir (shell/pwd))
+         (jp:shorten-dir (eshell/pwd))
          " > ")))
 
 (setq eshell-cmpl-cycle-completions nil
@@ -436,13 +505,12 @@
      (setenv "LANG" "en_US.UTF-8")
      (setenv "PAGER" "cat")
      (add-hook 'eshell-mode-hook ;; for some reason this needs to be a hook
-               '(lambda ()
-                  (define-key eshell-mode-map "\C-a" 'eshell-bol)))
+               '(lambda () (define-key eshell-mode-map "\C-a" 'eshell-bol)))
      (setq eshell-cmpl-cycle-completions nil)
 
-     ;; TODO: submit thise via M-x report-emacs-bug
+     ;; TODO: submit these via M-x report-emacs-bug
      (add-to-list 'eshell-visual-commands "ssh")
-     (add-to-list 'eshell-visual-command "tail")
+     (add-to-list 'eshell-visual-commands "tail")
      (add-to-list 'eshell-command-completions-alist
                   '("gunzip" "gz\\'"))
      (add-to-list 'eshell-command-completions-alist
@@ -451,17 +519,25 @@
 ;;;###autoload
 (defun eshell/cds ()
   "Change directory to the project's root."
-  (eshell/cd (locate-dominiating-file default-directory "src")))
+  (eshell/cd (locate-dominating-file default-directory "src")))
 
+;;;###autoload
+(defun eshell/cds ()
+  "Change directory to the project's root."
+  (eshell/cd (locate-dominating-file default-directory "src")))
+
+;;;###autoload
 (defun eshell/cdl ()
-  "Chagne directory to the project's root."
+  "Change directory to the project's root."
   (eshell/cd (locate-dominating-file default-directory "lib")))
 
-(defun shell/cdg ()
+;;;###autoload
+(defun eshell/cdg ()
   "Change directory to the project's root."
   (eshell/cd (locate-dominating-file default-directory ".git")))
 
-;; these 2 haven't made it upstream yet
+;; these two haven't made it upstream yet
+;;;###autoload
 (when (not (functionp 'eshell/find))
   (defun eshell/find (dir &rest opts)
     (find-dired dir (mapconcat (lambda (arg)
@@ -469,6 +545,8 @@
                                      (concat "\"" arg "\"")
                                    arg))
                                opts " "))))
+
+;;;###autoload
 (when (not (functionp 'eshell/rgrep))
   (defun eshell/rgrep (&rest args)
     "Use Emacs grep facility instead of calling external grep."
@@ -492,33 +570,31 @@
                          (".*" "echo 'Could not extract the file:'")))))
     (eshell-command-result (concat command " " file))))
 
-;;;###autoload
 (defface jp:eshell-error-prompt-face
   '((((class color) (background dark)) (:foreground "red" :bold t))
     (((class color) (background light)) (:foreground "red" :bold t)))
   "Face for nonzero prompt results"
   :group 'eshell-prompt)
 
-
-(add-hook 'eshell-after-prompt-hook.
+(add-hook 'eshell-after-prompt-hook
           (defun jp:eshell-exit-code-prompt-face ()
             (when (and eshell-last-command-status
-                       (not (zerop eshell-last-command-staus)))
+                       (not (zerop eshell-last-command-status)))
               (let ((inhibit-read-only t))
                 (add-text-properties
-                 (save-excutsion (beginning-of-line) (point)) (point-max)
+                 (save-excursion (beginning-of-line) (point)) (point-max)
                  '(face jp:eshell-error-prompt-face))))))
-
 
 (defun jp:eshell-in-dir (&optional prompt)
   "Change the directory of an existing eshell to the directory of the file in
- the current buffer or launch a new ehsell in one isn't running.  If the
- current buffer does not have a file (e.g., a *scratch* buffer) launch or raise
- eshell, as appropriate.  Given a prefix org, prompt for the destination directory."
+  the current buffer or launch a new eshell if one isn't running.  If the
+  current buffer does not have a file (e.g., a *scratch* buffer) launch or raise
+  eshell, as appropriate.  Given a prefix arg, prompt for the destination
+  directory."
   (interactive "P")
   (let* ((name (buffer-file-name))
          (dir (cond (prompt (read-directory-name "Directory: " nil nil t))
-                    (name (file-name-directory-name))
+                    (name (file-name-directory name))
                     (t nil)))
          (buffers (delq nil (mapcar (lambda (buf)
                                       (with-current-buffer buf
@@ -532,27 +608,49 @@
                        (t (eshell)))))
     (with-current-buffer buffer
       (when dir
-        (eshell/cd (list-dit))
-        (eshell-sent-input))
+        (eshell/cd (list dir))
+        (eshell-send-input))
       (end-of-buffer)
       (pop-to-buffer buffer))))
 
-(setq org-agenda-files (list "~/Dropbox/Personal/organizer.org"
-                             "~/Dropbox/Personal/projects.org"
-                             "~/Dropbox/Personal/ihr.org"
-                             "~/Dropbox/Personal/journal.org"
-                             "~/Dropbox/Personal/talks.org"
-                             "~/Dropbox/Personal/jpp.org"))
+(require 'htmlize)
+;; various preferences
+(setq org-modules (quote (org-habit))
+      org-directory "~/Desktop/Dropbox/Personal/" ;; everything is stored in Dropbox
+      org-default-notes-file (concat org-directory "/refile.org")
+      org-startup-indented t
+      org-hide-leading-stars t
+      org-oddeven-levels-only t
+      org-tags-column 65
+      org-use-fast-todo-selection t
+      org-completion-use-ido t
+      org-log-done 'note
+      org-log-into-drawer t
+      org-cycle-separator-lines 0
+      org-agenda-window-setup 'current-window
+      org-agenda-span 2
+      org-agenda-include-diary t
+      org-agenda-show-log t
+      org-agenda-start-on-weekday nil
+      org-export-htmlize-output-type 'css
+      org-agenda-log-mode-items (quote (closed state))
+      org-habit-show-habits t)
+
+(setq org-agenda-files (list "~/Desktop/Dropbox/Personal/organizer.org"
+                             "~/Desktop/Dropbox/Personal/projects.org"
+                             "~/Desktop/Dropbox/Personal/ihr.org"
+                             "~/Desktop/Dropbox/Personal/journal.org"
+                             "~/Desktop/Dropbox/Personal/talks.org"))
 
 ;; refile behavior
-(setq org-refile-targets '((org-agenda-files :maxlevel . 5) (nil :maxlevel . 5 )))
+(setq org-refile-targets '((org-agenda-files :maxlevel . 5) (nil :maxlevel . 5)))
 (setq org-refile-use-outline-path 'file)
 (setq org-refile-allow-creating-parent-nodes (quote confirm))
-(setq org-refile-path-complete-in-steps t)
+(setq org-outline-path-complete-in-steps t)
 
 (setq org-todo-keywords
-      '((sequence "TODO(t)" "STARTED(s!)" "|" "DONE(d!/!)")
-        (sequence "WAITING(w@/!)" "SOMEDAY(S!)" "OPEN(O@)" "|" "CANCELLED(c@/!)")))
+ '((sequence "TODO(t)" "STARTED(s!)" "|" "DONE(d!/!)")
+   (sequence "WAITING(w@/!)" "SOMEDAY(S!)" "OPEN(O@)" "|" "CANCELLED(c@/!)")))
 
 (setq org-todo-state-tags-triggers
       '(("CANCELLED" ("CANCELLED" . t))
@@ -579,49 +677,55 @@
                       ("CONFIG" . ?n)))
 
 (setq org-global-properties
+      '(("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00")))
+
+(setq org-capture-templates
       '(("t" "Tasks" entry
-         (file+headline "~/Dropbox/Personal/organizer.org"  "Tasks")
-         "* TODO %^{Task} &^g
-  %?
-  :PROPERTIES:
-  :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
-  :END:")
-        ("b" "IHR Task" entry
-         (file+headline "~/Dropbox/Personal/ihr.org" "Tasks")
-         "*TODO %^{Task} %^g
-  %?
-  :PROPERTIES:
-  :EFFORT: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
-  :END:")
-        ("d" "Done Task" entry
-         (file+headline "~/Dropbox/Personal/organizer.org" "Tasks")
+         (file+headline "~/Desktop/Dropbox/Personal/organizer.org" "Tasks")
+         "* TODO %^{Task} %^g
+%?
+:PROPERTIES:
+:Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
+:END:")
+        ("b" "IHR task" entry
+         (file+headline "~/Desktop/Dropbox/Personal/ihr.org" "Tasks")
+         "* TODO %^{Task} %^g
+%?
+:PROPERTIES:
+:Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
+:END:")
+        ("d" "Done task" entry
+         (file+headline "~/Desktop/Dropbox/Personal/organizer.org" "Tasks")
          "* DONE %^{Task} %^g
-  SCHEDULED: %^t
-  %?")
+SCHEDULED: %^t
+%?")
         ("r" "Refile" entry
-         (file "~/Dropbox/Personal/refile.org")
+         (file "~/Desktop/Dropbox/Personal/refile.org")
          "* TODO %^{Name} %^g
-  %?")
-        ("q" "Quick Task" entry
-         (file+headline "~/Dropbox/Personal/organizer.org" "Tasks")
+%?")
+        ("c" "Culture" entry
+         (file+headline "~/Desktop/Dropbox/Personal/organizer.org" "Culture")
+         "* TODO %^{Name} %^g
+%?")
+        ("q" "Quick task" entry
+         (file+headline "~/Desktop/Dropbox/Personal/organizer.org" "Tasks")
          "* TODO %^{Task} %^g"
          :immediate-finish t)
         ("T" "Note from talks/lectures" entry
-         (file+datetree "~/Dropbox/Personal/talks.org")
-         "* %^{Name} %T
-  %?")
+          (file+datetree "~/Desktop/Dropbox/Personal/talks.org")
+          "* %^{Name} %T
+%?")
         ("N" "IHR: Note" entry
-         (file+datetree "~/Dropbox/Personal/ihr.org")
-         "* %^{Name} %T
-  %?")
-        ("j" "Journal" entry
-         (file-datetree "~/Dropbox/Personal/journal.org")
-         "* %^{Name} %T :DIARY:
-  %?"
-         :clock-in :clock-resume)))
+          (file+datetree "~/Desktop/Dropbox/Personal/ihr.org")
+          "* %^{Name} %T
+%?")
+         ("j" "Journal" entry
+          (file+datetree "~/Desktop/Dropbox/Personal/journal.org")
+          "* %^{Name} %T :DIARY:
+%?"
+          :clock-in :clock-resume)))
 
-
-;; Custom agenda views
+;; custom agenda views
 (setq org-agenda-custom-commands
       '(("s" "Started Tasks" todo "STARTED"
          ((org-agenda-todo-ignore-scheduled nil)
@@ -633,7 +737,7 @@
 
         ("r" "Refile New Notes and Tasks" tags "LEVEL=1+REFILE"
          ((org-agenda-todo-ignore-with-date nil)
-          (org-agenda-todo-ignore-dealines nil)
+          (org-agenda-todo-ignore-deadlines nil)
           (org-agenda-todo-ignore-scheduled nil)))
 
         ("N" "Notes" tags "NOTE" nil)
@@ -651,13 +755,13 @@
 (setq org-habit-following-days 3)
 (setq org-habit-preceding-days 3)
 
-;; Prevent creating blank lines before headings but allows list items to adapt to existing blank lines around the items:
+;; prevents creating blank lines before headings but allows list items to adapt to existing blank lines around the items:
 (setq org-blank-before-new-entry (quote ((heading) (plain-list-item . auto))))
 
-;; Encryption
+;; encryption
 (require 'org-crypt)
-(setq org-tags-exclude-from-inheritance (quote  ("crypt")))
-(setq org-crypt-key "7dd99d3b47b7fa9e4eb318")
+(setq org-tags-exclude-from-inheritance (quote ("crypt")))
+(setq org-crypt-key "93A80B459A93BEED")
 (org-crypt-use-before-save-magic)
 
 ;; babel
@@ -668,18 +772,18 @@
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
-   (scheme   . t)
-   (sh   . t)
-   (clojure  . t)))
+   (scheme     . t)
+   (sh         . t)
+   (clojure    . t)))
 
 (defun org-babel-execute:scheme (body params)
   (let* ((tangle (cdr (assoc :tangle params)))
          (script-file
           (if (string-equal tangle "no")
-              (org-babel-temp-file "org-babel-" "*.rkt")
+              (org-babel-temp-file "org-babel-" ".rkt")
             tangle)))
     (with-temp-file script-file
-      (insert-body))
+      (insert body))
     (let* ((pn (org-babel-process-file-name script-file))
            (cmd (format "racket -u %s" pn)))
       (message cmd)
@@ -704,6 +808,10 @@
                  (cdr (assoc :package params)))
                 :value))))
 
+(defun jp:aspell-french ()
+  (interactive)
+  (ispell-change-dictionary "french"))
+
 (defun jp:aspell-english ()
   (interactive)
   (ispell-change-dictionary "english"))
@@ -711,9 +819,9 @@
 (setq ispell-program-name "aspell" ; use aspell instead of ispell
       ispell-extra-args '("--sug-mode=ultra"))
 
-(autoload 'flyspell-mode "flyspell"  "On-the-fly spelling checker." t)
+(autoload 'flyspell-mode "flyspell" "On-the-fly spelling checker." t)
 
-(add-hook 'message-mode-hook 'flyspell-mode-hook 'flyspell-mode)
+(add-hook 'message-mode-hook 'flyspell-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)
 
 (add-to-list 'auto-mode-alist '("\\.txt$" . text-mode))
@@ -733,7 +841,7 @@
 (require 'helm-misc)
 (require 'helm-projectile)
 
-(setq projectile-cache-file (expand-file-name "projectile.cache" jp:savefile-dir))
+(setq projectile-cache-file (expand-file-name  "projectile.cache" jp:savefile-dir))
 
 (projectile-global-mode t)
 
@@ -747,19 +855,18 @@
   "Preconfigured `helm'."
   (interactive)
   (condition-case nil
-      (if (projectile-project-root)
-          ;; add project files and buffers when in project
-          (help-other-buffer ('helm-c-source-projectile-files-list
-                              helm-c-source-projectile-vuffers-list
-                              helm-c-source-buffers-list
-                              helm-c-source-recentf
-                              helm-c-source-buffer-not-found)
-                             "*helm prelude*")
-        ;; otherwise fallback to helm-mini
-        (helm-mini))
-    ;; fall back to helm-mini if an error occurs (usually in projectile-project-root)
+    (if (projectile-project-root)
+        ;; add project files and buffers when in project
+        (helm-other-buffer '(helm-c-source-projectile-files-list
+                             helm-c-source-projectile-buffers-list
+                             helm-c-source-buffers-list
+                             helm-c-source-recentf
+                             helm-c-source-buffer-not-found)
+                           "*helm prelude*")
+      ;; otherwise fallback to helm-mini
+      (helm-mini))
+    ;; fall back to helm mini if an error occurs (usually in projectile-project-root)
     (error (helm-mini))))
-(helm-mode 1)
 
 (defun jp:magit-log-edit-mode-hook ()
   (setq fill-column 72)
@@ -790,15 +897,13 @@
 (add-to-list 'auto-mode-alist '("\\.el*" . emacs-lisp-mode))
 
 (defun jp:emacs-lisp-mode-defaults ()
-  (run-hooks 'jp:lisp-mode-hook)
+  (run-hooks 'jp:lisp-coding-hook)
   (turn-on-eldoc-mode)
   (rainbow-mode +1))
 
 (setq jp:emacs-lisp-mode-hook 'jp:emacs-lisp-mode-defaults)
 
-(add-hook 'emacs-list-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
-
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(add-hook 'emacs-lisp-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
 
 (eval-after-load 'clojure-mode
   '(progn
@@ -806,6 +911,7 @@
        (subword-mode +1)
        (turn-on-eldoc-mode)
        (run-hooks 'jp:lisp-coding-hook))
+
      (setq jp:clojure-mode-hook 'jp:clojure-mode-defaults)
 
      (add-hook 'clojure-mode-hook (lambda ()
@@ -817,7 +923,7 @@
 
      (defun jp:nrepl-mode-defaults ()
        (subword-mode +1)
-       (run-hooks 'jp:interactive-list-coding-hook))
+       (run-hooks 'jp:interactive-lisp-coding-hook))
 
      (setq jp:nrepl-mode-hook 'jp:nrepl-mode-defaults)
 
@@ -833,14 +939,14 @@
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'nrepl-mode))
 
-  ;;; Monkey Patch nREPL with better behavior:
+;;; Monkey Patch nREPL with better behaviour:
 
-  ;;; Region discovery fix
+;;; Region discovery fix
 (defun nrepl-region-for-expression-at-point ()
   "Return the start and end position of defun at point."
   (when (and (live-paredit-top-level-p)
              (save-excursion
-               (ignore0errors (forward-char))
+               (ignore-errors (forward-char))
                (live-paredit-top-level-p)))
     (error "Not in a form"))
 
@@ -853,22 +959,22 @@
         (backward-sexp)
         (list (point) end)))))
 
-  ;;; Windows M-. navigation fix
+;;; Windows M-. navigation fix
 (defun nrepl-jump-to-def (var)
   "Jump to the definition of the var at point."
   (let ((form (format "((clojure.core/juxt
                          (comp (fn [s] (if (clojure.core/re-find #\"[Ww]indows\" (System/getProperty \"os.name\"))
                                            (.replace s \"file:/\" \"file:\")
                                            s))
-                                clojure.core/str
-                                clojure.java.io/resource :file)
-                        (comp clojure.core/str clojure.java.io/file :file) :line)
-                      (clojure.core/meta (clojure.core/resolve '%s)))"
+                               clojure.core/str
+                               clojure.java.io/resource :file)
+                         (comp clojure.core/str clojure.java.io/file :file) :line)
+                        (clojure.core/meta (clojure.core/resolve '%s)))"
                       var)))
     (nrepl-send-string form
                        (nrepl-jump-to-def-handler (current-buffer))
                        (nrepl-current-ns)
-                       (newpl-current-tooling-session))))
+                       (nrepl-current-tooling-session))))
 
 (add-to-list 'auto-mode-alist '("\\.cljs?$" . clojure-mode))
 (add-to-list 'same-window-buffer-names "*nrepl*")
@@ -904,17 +1010,16 @@
 (add-to-list 'ac-modes 'slime-repl-mode)
 
 ;; a great lisp coding hook
-(defun jp:lisp-coding-defaults n()
+(defun jp:lisp-coding-defaults ()
   (paredit-mode +1)
-  (rainbow-delimeters-mode +1))
-
+  (rainbow-delimiters-mode +1))
 
 (setq jp:lisp-coding-hook 'jp:lisp-coding-defaults)
 
 ;; interactive modes don't need whitespace checks
 (defun jp:interactive-lisp-coding-defaults ()
   (paredit-mode +1)
-  (rainbow-delimeters-mode +1)
+  (rainbow-delimiters-mode +1)
   (whitespace-mode -1))
 
 (setq jp:interactive-lisp-coding-hook 'jp:interactive-lisp-coding-defaults)
@@ -935,8 +1040,8 @@
  cperl-indent-level 4
  cperl-indent-parens-as-block t
  cperl-continued-statement-offset 4
- cperl-indent-dubs-specifically nil
- cperl-invalid-face-nil)
+ cperl-indent-subs-specially nil
+ cperl-invalid-face nil)
 
 (add-to-list 'auto-mode-alist '("\\.pl$" . cperl-mode))
 (add-to-list 'auto-mode-alist '("\\.pm$" . cperl-mode))
@@ -948,13 +1053,15 @@
 (defun jp:python-mode-defaults ()
   (run-hooks 'jp:prog-mode-hook))
 
-(setq jp:python-mode-hook (lambda ()
-                            (run-hooks 'jp:python-mode-hook)))
+(setq jp:python-mode-hook 'jp:python-mode-defaults)
+
+(add-hook 'python-mode-hook (lambda ()
+                              (run-hooks 'jp:python-mode-hook)))
 
 ;; correct indentation
 (defadvice jp:python-calculate-indentation (around outdent-closing-brackets)
   "Handle lines beginning with a closing bracket and indent them so that
-  they line up with the line containing the opening bracket."
+  they line up with the line containing the corresponding opening bracket."
   (save-excursion
     (beginning-of-line)
     (let ((syntax (syntax-ppss)))
@@ -975,15 +1082,30 @@
 
 (add-to-list 'auto-mode-alist '("\\.rake\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("Rakefile\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.gemspec\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.ru\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Gemfile\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Guardfile\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Capfile\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Capfile\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.thor\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Berksfile\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Vagrantfile\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.graph\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Thorfile\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Berksfile\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.graph$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.knife$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Berksfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Capfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Cheffile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Collanderfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Gemfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Guardfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Kitchenfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Procfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Rantfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Thorfile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Vagrantfile$" . ruby-mode))
+
+(add-hook 'ruby-mode-hook 'esk-paredit-nonlisp)
+
 
 (eval-after-load 'ruby-mode
   '(progn
@@ -991,9 +1113,12 @@
        (inf-ruby-setup-keybindings)
        ;; turn off the annoying input echo in irb
        (setq comint-process-echoes t)
-       (ruby-block-mode t)
+       ;;(ruby-block-mode t)
        (ruby-end-mode +1)
-       (roby-tools-mode +1)
+       (ruby-tools-mode +1)
+       (global-font-lock-mode t)
+       (font-lock-mode 1)
+
        ;; CamelCase aware editing operations
        (subword-mode +1))
 
@@ -1014,3 +1139,8 @@
 (setq jp:scheme-coding-hook 'jp:scheme-coding-defaults)
 
 (add-hook 'scheme-mode-hook (lambda () (run-hooks 'jp:scheme-coding-hook)))
+
+(add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . json-mode))
+
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
