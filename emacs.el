@@ -25,6 +25,8 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
+(load-file "~/bin/cedet/cedet-devel-load.el")
+
 (defvar my-packages
   '(
     ;; editing
@@ -75,7 +77,12 @@
     ruby-end
     ruby-tools
     inf-ruby
-    yari)
+    yari
+
+    ;; Java // Android
+    android-mode
+    ecb
+    )
   "A list of packages to ensure are installed at launch.")
 
 (dolist (p my-packages)
@@ -370,6 +377,12 @@
 
 ;; movement
 (global-set-key (kbd "C-x O") 'jp:back-window)
+
+;; window movement
+(global-set-key (kbd "C-x <up>") 'windmove-up)
+(global-set-key (kbd "C-x <down>") 'windmove-down)
+(global-set-key (kbd "C-x <right>") 'windmove-right)
+(global-set-key (kbd "C-x <left>") 'windmove-left)
 
 (global-set-key (kbd "M-j") (lambda () (interactive) (join-line -1)))
 
@@ -874,6 +887,8 @@ SCHEDULED: %^t
 
 (add-hook 'magit-log-edit-mode-hook 'jp:magit-log-edit-mode-hook)
 
+(require 'ecb)
+
 (require 'which-func)
 (which-function-mode 1)
 
@@ -1144,3 +1159,26 @@ SCHEDULED: %^t
 (add-to-list 'auto-mode-alist '("\\.js\\'" . json-mode))
 
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
+(require 'android-mode)
+(setq android-mode-sdk-dir "~/bin/android-sdk-osx/")
+(add-hook 'gud-mode-hook
+  (lambda ()
+  (add-to-list 'gud-jdb-classpath "/Users/kplimack//bin/android-sdk-osx/platforms/android-17/android.jar")
+))
+
+;; Enabling Semantic features
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers)
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-excessive-code-helpers)
+(semantic-load-enable-semantic-debugging-helpers)
+
+;; Enable SRecode (Template management) minor-mode.
+(global-srecode-minor-mode 1)
+
+(global-cedet-m3-minor-mode 1)
+(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
+
+(global-ede-mode 1)

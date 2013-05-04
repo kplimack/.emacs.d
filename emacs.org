@@ -50,6 +50,10 @@ Let's start by setting the repositories I want to use.
   (when (not package-archive-contents)
     (package-refresh-contents))
 #+END_SRC
+*** Load Files
+#+BEGIN_SRC emacs-lisp
+(load-file "~/bin/cedet/cedet-devel-load.el")
+#+END_SRC
 *** Packages
 And then the list of packages I want to download and install.
 #+BEGIN_SRC emacs-lisp
@@ -103,7 +107,12 @@ And then the list of packages I want to download and install.
       ruby-end
       ruby-tools
       inf-ruby
-      yari)
+      yari
+
+      ;; Java // Android
+      android-mode
+      ecb
+      )
     "A list of packages to ensure are installed at launch.")
 
   (dolist (p my-packages)
@@ -472,6 +481,13 @@ This theme is nice, but I hate that it forces the headline in org-mode to be of 
 
 ;; movement
 (global-set-key (kbd "C-x O") 'jp:back-window)
+
+;; window movement
+(global-set-key (kbd "C-x <up>") 'windmove-up)
+(global-set-key (kbd "C-x <down>") 'windmove-down)
+(global-set-key (kbd "C-x <right>") 'windmove-right)
+(global-set-key (kbd "C-x <left>") 'windmove-left)
+
 #+END_SRC
 
 [[http://whattheemacsd.com//key-bindings.el-03.html][This binding]] is for joining the following line into this one.
@@ -1052,6 +1068,10 @@ We want to wrap lines at 72 characters when writing a commit message.
 
   (add-hook 'magit-log-edit-mode-hook 'jp:magit-log-edit-mode-hook)
 #+end_src
+** ECB
+#+BEGIN_SRC emacs-lisp
+(require 'ecb)
+#+END_SRC
 * Programming modes
 ** General
 Show the name of the current function definition in the modeline
@@ -1381,4 +1401,37 @@ I need paredit and rainbow modes to edit scheme:
 *** Configuration
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+#+END_SRC
+
+** AndroidJava
+*** Android Mode
+#+BEGIN_SRC emacs-lisp
+(require 'android-mode)
+(setq android-mode-sdk-dir "~/bin/android-sdk-osx/")
+(add-hook 'gud-mode-hook
+  (lambda ()
+  (add-to-list 'gud-jdb-classpath "/Users/kplimack//bin/android-sdk-osx/platforms/android-17/android.jar")
+))
+#+END_SRC
+*** Semantic Mode
+#+BEGIN_SRC emacs-lisp
+;; Enabling Semantic features
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers)
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-excessive-code-helpers)
+(semantic-load-enable-semantic-debugging-helpers)
+
+;; Enable SRecode (Template management) minor-mode.
+(global-srecode-minor-mode 1)
+#+END_SRC
+*** Cedet
+#+BEGIN_SRC emacs-lisp
+(global-cedet-m3-minor-mode 1)
+(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
+#+END_SRC
+*** EDE
+#+BEGIN_SRC emacs-lisp
+(global-ede-mode 1)
 #+END_SRC
