@@ -27,6 +27,8 @@
 
 (load-file "~/bin/cedet/cedet-devel-load.el")
 
+(load-file "~/.emacs.d/personal/web-mode.el")
+
 (defvar my-packages
   '(
     ;; editing
@@ -82,6 +84,11 @@
     ;; Java // Android
     android-mode
     ecb
+
+    ;; PHP
+    php-mode
+    php-extras
+
     )
   "A list of packages to ensure are installed at launch.")
 
@@ -450,6 +457,7 @@
       (quote (("default"
                ("dired" (mode . dired-mode))
                ("perl" (mode . cperl-mode))
+               ("php" (mode . web-mode))
                ("python" (mode . python-mode))
                ("clojure" (mode . clojure-mode))
                ("ruby" (mode . ruby-mode))
@@ -1066,33 +1074,57 @@ SCHEDULED: %^t
 (add-to-list 'auto-mode-alist '("Makefile\\.PL$" . cperl-mode))
 
 (require 'php-mode)
-(require 'flymake)
-
-(defun flymake-php-init()
-  "Use php to check the syntax of the current file."
-  (let* ((temp (flymake-init-create-temp-buffer-copy 'flymake-create-temp-inplace))
-         (local (file-relate-name temp (file-name-directory buffer-file-name))))
-    (list "php" (list "-f" local "-1"))))
-
-(add-to-list 'flymake-err-line-patterns
-  '("\\(Parse\\|Fatal\\) error: +\\(.*?\\) in \\(.?\\) on line \\([0-9]+\\)$" 3 4 nil 2))
-
-(add-to-list 'flymake-allowed-file-name-masks '("\\.php$" flymake-php-init))
-
-(add-hook 'php-mode-hook (lambda () (flymake-mode 1)))
-(define-key php-mode-map '[M-S-up] 'flymake-goto-prev-error)
-(define-key php-mode-map '[M-S-down] 'flymake-goto-next-error)
+;;(require 'flymake)
+(require 'web-mode)
 
 (add-to-list 'auto-mode-alist '("\\.php$" . php-mode))
 
-(setq
-  c-basic-offset 4
-  tab-width 4
-  )
+(setq indent-tabs-mode t)
 
-(eval-after-load 'php-mode
-  '(progn
-     (define-key php-mode-map (kbd "RET") 'reindent-then-newline-and-indent)))
+(defun jp:php-mode-init ()
+ "Set some buffer-local variables."
+ (setq case-fold-search t) 
+ (setq indent-tabs-mode nil)
+ (setq fill-column 78)
+ (setq c-basic-offset 2)
+ (setq show-paren-mode t)
+ (setq php-mode-force-pear 1)
+ (c-set-offset 'arglist-cont 0)
+ (c-set-offset 'arglist-intro '+)
+ (c-set-offset 'case-label 2)
+ (c-set-offset 'arglist-close 0)
+
+(defun php-run ()
+  (interactive)
+  (shell-command
+  (concat "/usr/bin/php -q \"" (buffer-file-name) "\"")))
+(defun php-check () 
+  (interactive) 
+    (let ((compilation-error-regexp-alist '(php)) 
+      (compilation-error-regexp-alist-alist ())) 
+      (pushnew '(php "\\(syntax error.*\\) in \\(.*\\) on line \\([0-9]+\\)$" 2 3 nil nil 1) 
+        compilation-error-regexp-alist-alist) 
+      (compile (concat "php -l -f \"" (buffer-file-name) "\""))))
+(defun php-check-style ()
+  "Performs a PHP code sniffer check on the current file."
+  (interactive)
+  (let ((compilation-error-regexp-alist ('gnu)))
+    (compile (format "phpcs --standard=PEAR --report=emacs \"%s\""
+      (buffer-file-name)))))
+ 
+(define-key c-mode-map [return] 'newline-and-indent)
+(define-key php-mode-map [(control c) (r)] 'php-run)
+(define-key php-mode-map [(control c) (c)] 'php-check)
+(define-key php-mode-map [(control c) (s)] 'php-check-style)
+(define-key php-mode-map [(control c) (t)] 'php-tokens)
+
+(interactive)
+(setq fill-column 78)
+(c-toggle-auto-state)
+(c-toggle-hungry-state)
+(which-function-mode)
+)
+(add-hook 'php-mode-hook 'jp:php-mode-init)
 
 (defun jp:python-mode-defaults ()
   (run-hooks 'jp:prog-mode-hook))
