@@ -1077,7 +1077,7 @@ SCHEDULED: %^t
 ;;(require 'flymake)
 (require 'web-mode)
 
-(add-to-list 'auto-mode-alist '("\\.php$" . php-mode))
+(add-to-list 'auto-mode-alist '("\\.php$" . web-mode))
 
 (setq indent-tabs-mode t)
 
@@ -1125,6 +1125,27 @@ SCHEDULED: %^t
 (which-function-mode)
 )
 (add-hook 'php-mode-hook 'jp:php-mode-init)
+
+(defun web-mode-hook ()
+  "Hooks for web-mode."
+  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-css-indent-offset 4)
+  (setq web-mode-code-indent-offset 4)
+  (setq web-mode-indent-style 4)
+  (setq web-mode-style-padding 2)
+  (setq web-mode-script-padding 2)
+  (setq web-mode-block-padding 0)
+  (setq web-mode-comment-style 2)
+  (set-face-attribute 'web-mode-css-rule-face nil :foreground "Pink3")
+
+  (setq web-mode-extra-auto-pairs 
+    '(("erb"  . (("open" "close")))
+      ("php"  . (("open" "close")
+                 ("open" "close")))
+     ))
+  )
+  (add-hook 'web-mode-hook  'web-mode-hook)
 
 (defun jp:python-mode-defaults ()
   (run-hooks 'jp:prog-mode-hook))
