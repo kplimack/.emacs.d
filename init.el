@@ -3,6 +3,9 @@
 ;; This file loads Org-mode and then loads the rest of our Emacs initialization from Emacs lisp
 ;; embedded in literate Org-mode files.
 
+(setq ls-lisp-use-insert-directory-program t)
+(setq insert-directory-program "gls")
+
 ;; Load up Org Mode and (now included) Org Babel for elisp embedded in Org Mode files
 (require 'org)
 (require 'org-install)

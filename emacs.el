@@ -1,4 +1,9 @@
 
+
+(setq ls-lisp-use-insert-directory-program t)
+(setq insert-directory-program "gls")
+
+
 (defvar jp:base-dir (file-name-directory load-file-name)
   "The root dir of the Emacs distribution.")
 
@@ -24,8 +29,6 @@
 
 (when (not package-archive-contents)
   (package-refresh-contents))
-
-(load-file "~/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -1083,7 +1086,7 @@ SCHEDULED: %^t
 
 (defun jp:php-mode-init ()
  "Set some buffer-local variables."
- (setq case-fold-search t) 
+ (setq case-fold-search t)
  (setq indent-tabs-mode nil)
  (setq fill-column 78)
  (setq c-basic-offset 2)
@@ -1098,12 +1101,12 @@ SCHEDULED: %^t
   (interactive)
   (shell-command
   (concat "/usr/bin/php -q \"" (buffer-file-name) "\"")))
-(defun php-check () 
-  (interactive) 
-    (let ((compilation-error-regexp-alist '(php)) 
-      (compilation-error-regexp-alist-alist ())) 
-      (pushnew '(php "\\(syntax error.*\\) in \\(.*\\) on line \\([0-9]+\\)$" 2 3 nil nil 1) 
-        compilation-error-regexp-alist-alist) 
+(defun php-check ()
+  (interactive)
+    (let ((compilation-error-regexp-alist '(php))
+      (compilation-error-regexp-alist-alist ()))
+      (pushnew '(php "\\(syntax error.*\\) in \\(.*\\) on line \\([0-9]+\\)$" 2 3 nil nil 1)
+        compilation-error-regexp-alist-alist)
       (compile (concat "php -l -f \"" (buffer-file-name) "\""))))
 (defun php-check-style ()
   "Performs a PHP code sniffer check on the current file."
@@ -1111,7 +1114,7 @@ SCHEDULED: %^t
   (let ((compilation-error-regexp-alist ('gnu)))
     (compile (format "phpcs --standard=PEAR --report=emacs \"%s\""
       (buffer-file-name)))))
- 
+
 (define-key c-mode-map [return] 'newline-and-indent)
 (define-key php-mode-map [(control c) (r)] 'php-run)
 (define-key php-mode-map [(control c) (c)] 'php-check)
@@ -1137,9 +1140,10 @@ SCHEDULED: %^t
   (setq web-mode-script-padding 2)
   (setq web-mode-block-padding 0)
   (setq web-mode-comment-style 2)
+  (setq show-trailing-whitespace t)
   (set-face-attribute 'web-mode-css-rule-face nil :foreground "Pink3")
 
-  (setq web-mode-extra-auto-pairs 
+  (setq web-mode-extra-auto-pairs
     '(("erb"  . (("open" "close")))
       ("php"  . (("open" "close")
                  ("open" "close")))
@@ -1250,17 +1254,7 @@ SCHEDULED: %^t
 ))
 
 ;; Enabling Semantic features
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
-
-;; Enable SRecode (Template management) minor-mode.
-(global-srecode-minor-mode 1)
-
-(global-cedet-m3-minor-mode 1)
-(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
-
 (global-ede-mode 1)
+(require 'semantic/sb)
+(semantic-mode 1)
+
