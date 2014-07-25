@@ -1125,11 +1125,10 @@ SCHEDULED: %^t
 
 (add-hook 'ruby-mode-hook 'esk-paredit-nonlisp)
 
-
 (eval-after-load 'ruby-mode
   '(progn
      (defun jp:ruby-mode-defaults ()
-       (inf-ruby-setup-keybindings)
+       ;; (inf-ruby-setup-keybindings)
        ;; turn off the annoying input echo in irb
        (setq comint-process-echoes t)
        ;;(ruby-block-mode t)
@@ -1145,6 +1144,8 @@ SCHEDULED: %^t
 
      (add-hook 'ruby-mode-hook (lambda ()
                                  (run-hooks 'jp:ruby-mode-hook)))))
+     (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)
+     (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode)
 
 (add-to-list 'auto-mode-alist '("\\.scm\\'" . scheme-mode))
 (add-to-list 'auto-mode-alist '("\\.rkt\\'" . scheme-mode))
