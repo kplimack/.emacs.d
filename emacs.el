@@ -1,9 +1,4 @@
 
-
-(setq ls-lisp-use-insert-directory-program t)
-(setq insert-directory-program "gls")
-
-
 (defvar jp:base-dir (file-name-directory load-file-name)
   "The root dir of the Emacs distribution.")
 
@@ -29,6 +24,8 @@
 
 (when (not package-archive-contents)
   (package-refresh-contents))
+
+(load-file "~/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -59,11 +56,6 @@
 
     ;; scheme
     geiser
-
-    ;; clojure
-    clojure-mode
-    nrepl
-    ac-nrepl
 
     ;; project and files
     helm
@@ -331,7 +323,7 @@
 (global-set-key (kbd "C-x g") 'magit-status)
 
 ;; clojure stuff
-(global-set-key (kbd "C-c C-j") 'nrepl-jack-in)
+;; (global-set-key (kbd "C-c C-j") 'nrepl-jack-in)
 
 ;; resize windows
 (global-set-key (kbd "C-c =") 'enlarge-window)
@@ -433,7 +425,7 @@
 (setq dabbrev-friend-buffer-function 'jp:dabbrev-friend-buffer)
 
 (dolist
-    (mode '(clojure-mode lisp-mode python-mode perl-mode cperl-mode haml-mode sass-mode sh-mode geiser-mode))
+    (mode '(lisp-mode python-mode perl-mode cperl-mode haml-mode sass-mode sh-mode geiser-mode))
   (add-to-list 'ac-modes mode))
 
 ;;;;Key triggers
@@ -931,80 +923,6 @@ SCHEDULED: %^t
 
 (add-hook 'emacs-lisp-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
 
-(eval-after-load 'clojure-mode
-  '(progn
-     (defun jp:clojure-mode-defaults ()
-       (subword-mode +1)
-       (turn-on-eldoc-mode)
-       (run-hooks 'jp:lisp-coding-hook))
-
-     (setq jp:clojure-mode-hook 'jp:clojure-mode-defaults)
-
-     (add-hook 'clojure-mode-hook (lambda ()
-                                    (run-hooks 'jp:clojure-mode-hook)))))
-
-(eval-after-load 'nrepl
-  '(progn
-     (add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
-
-     (defun jp:nrepl-mode-defaults ()
-       (subword-mode +1)
-       (run-hooks 'jp:interactive-lisp-coding-hook))
-
-     (setq jp:nrepl-mode-hook 'jp:nrepl-mode-defaults)
-
-     (add-hook 'nrepl-mode-hook (lambda ()
-                                  (run-hooks 'jp:nrepl-mode-hook)))))
-
-(setq nrepl-popup-stacktraces nil)
-
-(require 'ac-nrepl )
-(add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
-(add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)
-
-(eval-after-load "auto-complete"
-  '(add-to-list 'ac-modes 'nrepl-mode))
-
-;;; Monkey Patch nREPL with better behaviour:
-
-;;; Region discovery fix
-(defun nrepl-region-for-expression-at-point ()
-  "Return the start and end position of defun at point."
-  (when (and (live-paredit-top-level-p)
-             (save-excursion
-               (ignore-errors (forward-char))
-               (live-paredit-top-level-p)))
-    (error "Not in a form"))
-
-  (save-excursion
-    (save-match-data
-      (ignore-errors (live-paredit-forward-down))
-      (paredit-forward-up)
-      (while (ignore-errors (paredit-forward-up) t))
-      (let ((end (point)))
-        (backward-sexp)
-        (list (point) end)))))
-
-;;; Windows M-. navigation fix
-(defun nrepl-jump-to-def (var)
-  "Jump to the definition of the var at point."
-  (let ((form (format "((clojure.core/juxt
-                         (comp (fn [s] (if (clojure.core/re-find #\"[Ww]indows\" (System/getProperty \"os.name\"))
-                                           (.replace s \"file:/\" \"file:\")
-                                           s))
-                               clojure.core/str
-                               clojure.java.io/resource :file)
-                         (comp clojure.core/str clojure.java.io/file :file) :line)
-                        (clojure.core/meta (clojure.core/resolve '%s)))"
-                      var)))
-    (nrepl-send-string form
-                       (nrepl-jump-to-def-handler (current-buffer))
-                       (nrepl-current-ns)
-                       (nrepl-current-tooling-session))))
-
-(add-to-list 'auto-mode-alist '("\\.cljs?$" . clojure-mode))
-(add-to-list 'same-window-buffer-names "*nrepl*")
-
 (when (file-exists-p (expand-file-name "~/Projects/extlib/quicklisp/slime-helper.el"))
   (load (expand-file-name "~/Projects/extlib/quicklisp/slime-helper.el")))
 
@@ -1254,7 +1172,17 @@ SCHEDULED: %^t
 ))
 
 ;; Enabling Semantic features
-(global-ede-mode 1)
-(require 'semantic/sb)
-(semantic-mode 1)
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers)
+(semantic-load-enable-gaudy-code-helpers)
+(semantic-load-enable-excessive-code-helpers)
+(semantic-load-enable-semantic-debugging-helpers)
 
+;; Enable SRecode (Template management) minor-mode.
+(global-srecode-minor-mode 1)
+
+(global-cedet-m3-minor-mode 1)
+(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
+
+(global-ede-mode 1)
