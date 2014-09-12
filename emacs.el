@@ -75,6 +75,7 @@
     ruby-tools
     inf-ruby
     yari
+    rubocop
 
     ;; Java // Android
     android-mode
@@ -1139,6 +1140,9 @@ SCHEDULED: %^t
 
        ;; CamelCase aware editing operations
        (subword-mode +1))
+
+     (require 'rubocop)
+     (add-hook 'ruby-mode-hook 'rubocop-mode)
 
      (setq jp:ruby-mode-hook 'jp:ruby-mode-defaults)
 

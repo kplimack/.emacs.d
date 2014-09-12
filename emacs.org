@@ -107,6 +107,7 @@ And then the list of packages I want to download and install.
       ruby-tools
       inf-ruby
       yari
+      rubocop
 
       ;; Java // Android
       android-mode
@@ -1351,6 +1352,9 @@ For  all the programming modes, we want to apply a few defaults.
 
          ;; CamelCase aware editing operations
          (subword-mode +1))
+
+       (require 'rubocop)
+       (add-hook 'ruby-mode-hook 'rubocop-mode)
 
        (setq jp:ruby-mode-hook 'jp:ruby-mode-defaults)
 
