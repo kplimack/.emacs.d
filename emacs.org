@@ -81,7 +81,6 @@ And then the list of packages I want to download and install.
       ;; general lisp
       paredit
       rainbow-delimiters
-      rainbow-mode
       slime
       highlight-parentheses
       ac-slime

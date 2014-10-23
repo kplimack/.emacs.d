@@ -25,7 +25,7 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-(load-file "~/bin/cedet/cedet-devel-load.el")
+(load-file "~/repos/dotfiles/.emacs.d/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -49,7 +49,6 @@
     ;; general lisp
     paredit
     rainbow-delimiters
-    rainbow-mode
     slime
     highlight-parentheses
     ac-slime
