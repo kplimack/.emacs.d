@@ -17,7 +17,7 @@
 
 (require 'package)
 
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (package-initialize)
@@ -25,7 +25,7 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-(load-file "~/repos/dotfiles/.emacs.d/bin/cedet/cedet-devel-load.el")
+(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -49,6 +49,7 @@
     ;; general lisp
     paredit
     rainbow-delimiters
+    rainbow-mode
     slime
     highlight-parentheses
     ac-slime
@@ -917,8 +918,7 @@ SCHEDULED: %^t
 (defun jp:emacs-lisp-mode-defaults ()
   (run-hooks 'jp:lisp-coding-hook)
   (turn-on-eldoc-mode)
-  (rainbow-mode +1))
-
+)
 (setq jp:emacs-lisp-mode-hook 'jp:emacs-lisp-mode-defaults)
 
 (add-hook 'emacs-lisp-mode-hook (lambda () (run-hooks 'jp:emacs-lisp-mode-hook)))
