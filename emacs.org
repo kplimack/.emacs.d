@@ -1363,6 +1363,9 @@ For  all the programming modes, we want to apply a few defaults.
 
 
 #+END_SRC
+
+
+
 ** Scheme
 For scheme, we use [[http://geiser.nongnu.org/index.html#Top][Geiser]].
 *** Configuration
@@ -1393,6 +1396,12 @@ I need paredit and rainbow modes to edit scheme:
 | =run-geiser= | start the REPL |
 | =C-x C-e=    | eval the sexp  |
 |              |                |
+** Shell
+*** Configuration
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.sh\\'" . shell-script-mode))
+(add-to-list 'auto-mode-alist '("\\.bats\\'" . shell-script-mode))
+#+END_SRC
 ** JSON
 *** Configuration
 #+BEGIN_SRC emacs-lisp

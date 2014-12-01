@@ -1163,6 +1163,9 @@ SCHEDULED: %^t
 
 (add-hook 'scheme-mode-hook (lambda () (run-hooks 'jp:scheme-coding-hook)))
 
+(add-to-list 'auto-mode-alist '("\\.sh\\'" . shell-script-mode))
+(add-to-list 'auto-mode-alist '("\\.bats\\'" . shell-script-mode))
+
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . json-mode))
 
