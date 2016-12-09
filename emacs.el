@@ -1,3 +1,4 @@
+(setq exec-path-from-shell-check-startup-files)
 
 (defvar jp:base-dir (file-name-directory load-file-name)
   "The root dir of the Emacs distribution.")
@@ -25,7 +26,7 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-(load-file "~/repos/dotfiles/.emacs.d/bin/cedet/cedet-devel-load.el")
+(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -917,7 +918,7 @@ SCHEDULED: %^t
 (defun jp:emacs-lisp-mode-defaults ()
   (run-hooks 'jp:lisp-coding-hook)
   (turn-on-eldoc-mode)
-  (rainbow-mode +1))
+  (when (fboundp 'rainbow-mode) (rainbow-mode +1)))
 
 (setq jp:emacs-lisp-mode-hook 'jp:emacs-lisp-mode-defaults)
 

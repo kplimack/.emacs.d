@@ -52,7 +52,7 @@ Let's start by setting the repositories I want to use.
 #+END_SRC
 *** Load Files
 #+BEGIN_SRC emacs-lisp
-(load-file "~/bin/cedet/cedet-devel-load.el")
+(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -1114,7 +1114,7 @@ For  all the programming modes, we want to apply a few defaults.
   (defun jp:emacs-lisp-mode-defaults ()
     (run-hooks 'jp:lisp-coding-hook)
     (turn-on-eldoc-mode)
-    (rainbow-mode +1))
+    (when (fboundp 'rainbow-mode) (rainbow-mode +1)))
 
   (setq jp:emacs-lisp-mode-hook 'jp:emacs-lisp-mode-defaults)
 
