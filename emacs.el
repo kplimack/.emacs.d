@@ -8,9 +8,13 @@
 (defvar jp:savefile-dir (expand-file-name "savefile" jp:personal-dir)
   "This folder stores all the automatically generated save/history-files.")
 
+(line-number-mode 1)
+(linum-mode 1)
+(setq linum-format "%d  ")
+
 (setq user-full-name "Jake Plimack")
 (setq user-mail-address "jake@jakeplimack.com")
-(setq user-homepage "http://jakeplimack.com")
+(setq user-homepage "https://www.jakeplimack.com")
 
 (load "server")
 (unless (server-running-p) (server-start))
@@ -25,7 +29,7 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
+;;(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
 
 (load-file "~/.emacs.d/personal/web-mode.el")
 
@@ -438,7 +442,7 @@
 
 (setq epg-gpg-program "/usr/local/bin/gpg")
 
-(load-library "~/.password.el.gpg")
+;;  (load-library "~/.password.el.gpg")
 
 ;; clean up obsolete buffers automatically
 (require 'midnight)
@@ -1179,17 +1183,17 @@ SCHEDULED: %^t
 ))
 
 ;; Enabling Semantic features
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
+;;(semantic-load-enable-gaudy-code-helpers)
+;;(semantic-load-enable-minimum-features)
+;;(semantic-load-enable-code-helpers)
+;;(semantic-load-enable-gaudy-code-helpers)
+;;(semantic-load-enable-excessive-code-helpers)
+;;(semantic-load-enable-semantic-debugging-helpers)
 
 ;; Enable SRecode (Template management) minor-mode.
-(global-srecode-minor-mode 1)
+;;(global-srecode-minor-mode 1)
 
-(global-cedet-m3-minor-mode 1)
-(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
+;;(global-cedet-m3-minor-mode 1)
+;;(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
 
 (global-ede-mode 1)

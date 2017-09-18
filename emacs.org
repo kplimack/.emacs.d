@@ -52,7 +52,7 @@ Let's start by setting the repositories I want to use.
 #+END_SRC
 *** Load Files
 #+BEGIN_SRC emacs-lisp
-(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
+;;(load-file "~/.emacs.d/bin/cedet/cedet-devel-load.el")
 #+END_SRC
 #+BEGIN_SRC emacs-lisp
 (load-file "~/.emacs.d/personal/web-mode.el")
@@ -336,6 +336,35 @@ Highlight matching parentheses when the point is on them.
 
 
 #+END_SRC
+
+#+BEGIN_SRC emacs-list
+(defun dired-do-command (command)
+  "Run COMMAND on marked files. Any files not already open will be opened.
+After this command has been run, any buffers it's modified will remain
+open and unsaved."
+  (interactive
+   (list
+    (let ((print-level nil)
+          (minibuffer-history-position 0)
+          (minibuffer-history-sexp-flag (1+ (minibuffer-depth))))
+      (unwind-protect
+          (read-from-minibuffer
+           "Command: " (prin1-to-string (nth 0 command-history))
+           read-expression-map t
+           (cons 'command-history 0))
+
+        ;; If command was added to command-history as a
+        ;; string, get rid of that.  We want only
+        ;; evaluable expressions there.
+        (if (stringp (car command-history))
+            (setq command-history (cdr command-history)))))))
+  (dolist (filename (dired-get-marked-files))
+    (with-current-buffer (find-file-noselect filename)
+      (if (symbolp command)
+          (call-interactively command)
+        (eval command)))))
+
+#+END_SRC
 * Cosmetic
 The toolbar is just a waste of valuable screen estate in a tty tool-bar-mode does not properly auto-load, and is already disabled anyway.
 #+BEGIN_SRC emacs-lisp
@@ -557,7 +586,7 @@ Set the path to the =gpg= executable.
 
 Passwords are stored into a file encrypted with GPG.
 #+BEGIN_SRC emacs-lisp
-  (load-library "~/.password.el.gpg")
+;;  (load-library "~/.password.el.gpg")
 #+END_SRC
 ** ibuffer
 #+BEGIN_SRC emacs-lisp
@@ -1429,20 +1458,20 @@ I need paredit and rainbow modes to edit scheme:
 *** Semantic Mode
 #+BEGIN_SRC emacs-lisp
 ;; Enabling Semantic features
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-gaudy-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
+;;(semantic-load-enable-gaudy-code-helpers)
+;;(semantic-load-enable-minimum-features)
+;;(semantic-load-enable-code-helpers)
+;;(semantic-load-enable-gaudy-code-helpers)
+;;(semantic-load-enable-excessive-code-helpers)
+;;(semantic-load-enable-semantic-debugging-helpers)
 
 ;; Enable SRecode (Template management) minor-mode.
-(global-srecode-minor-mode 1)
+;;(global-srecode-minor-mode 1)
 #+END_SRC
 *** Cedet
 #+BEGIN_SRC emacs-lisp
-(global-cedet-m3-minor-mode 1)
-(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
+;;(global-cedet-m3-minor-mode 1)
+;;(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
 #+END_SRC
 *** EDE
 #+BEGIN_SRC emacs-lisp
