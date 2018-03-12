@@ -26,7 +26,7 @@
  '(ede-project-directories (quote ("/Users/kplimack/repos/iPotter")))
  '(package-selected-packages
    (quote
-    (go-complete go-autocomplete go-mode rspec-mode nginx-mode impatient-mode flymd terraform-mode apache-mode toml-mode yari yaml-mode ruby-tools ruby-end ruby-block rubocop rainbow-mode rainbow-delimiters php-extras paredit markdown-mode magit json-mode inf-ruby htmlize highlight-parentheses helm-projectile geiser fuzzy exec-path-from-shell ecb cyberpunk-theme color-theme-solarized android-mode ac-slime))))
+    (rainbow-blocks go-errcheck go-stacktracer go-projectile js2-mode nodejs-repl go-snippets go-complete go-autocomplete go-mode rspec-mode nginx-mode impatient-mode flymd terraform-mode apache-mode toml-mode yari yaml-mode ruby-tools ruby-end ruby-block rubocop rainbow-mode rainbow-delimiters php-extras paredit markdown-mode magit json-mode inf-ruby htmlize highlight-parentheses helm-projectile geiser fuzzy exec-path-from-shell ecb cyberpunk-theme color-theme-solarized android-mode ac-slime))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

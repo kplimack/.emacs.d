@@ -57,6 +57,9 @@ Let's start by setting the repositories I want to use.
 #+BEGIN_SRC emacs-lisp
 (load-file "~/.emacs.d/personal/web-mode.el")
 #+END_SRC
+#+BEGIN_SRC emacs-list
+(load-file "~/.emacs.d/indent-guide.el")
+#+END_SRC
 *** Packages
 And then the list of packages I want to download and install.
 #+BEGIN_SRC emacs-lisp
@@ -1130,6 +1133,9 @@ For  all the programming modes, we want to apply a few defaults.
     (define-key global-map (kbd "RET") 'newline-and-indent)
     (setq-default tab-width 4) ;; default indentation
     (setq require-final-newline 't) ;; newline at EOF
+    
+    (load-file "~/.emacs.d/indent-guide.el")
+    (indent-guide-global-mode)
     (jp:add-watchwords))
 
   (setq jp:prog-mode-hook 'jp:prog-mode-defaults)

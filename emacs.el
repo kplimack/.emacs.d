@@ -8,13 +8,9 @@
 (defvar jp:savefile-dir (expand-file-name "savefile" jp:personal-dir)
   "This folder stores all the automatically generated save/history-files.")
 
-(line-number-mode 1)
-(linum-mode 1)
-(setq linum-format "%d  ")
-
 (setq user-full-name "Jake Plimack")
 (setq user-mail-address "jake@jakeplimack.com")
-(setq user-homepage "https://www.jakeplimack.com")
+(setq user-homepage "http://jakeplimack.com")
 
 (load "server")
 (unless (server-running-p) (server-start))
@@ -911,6 +907,9 @@ SCHEDULED: %^t
   (define-key global-map (kbd "RET") 'newline-and-indent)
   (setq-default tab-width 4) ;; default indentation
   (setq require-final-newline 't) ;; newline at EOF
+  
+  (load-file "~/.emacs.d/indent-guide.el")
+  (indent-guide-global-mode)
   (jp:add-watchwords))
 
 (setq jp:prog-mode-hook 'jp:prog-mode-defaults)
