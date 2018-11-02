@@ -45,7 +45,7 @@ Let's start by setting the repositories I want to use.
   (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/") t)
   (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
-  (package-initialize)
+  ;;(package-initialize)
 
   (when (not package-archive-contents)
     (package-refresh-contents))
@@ -959,7 +959,7 @@ We're using the following files for our agendas.  Each one of this file contains
    'org-babel-load-languages
    '((emacs-lisp . t)
      (scheme     . t)
-     (sh         . t)
+     (shell         . t)
      (clojure    . t)))
 
   (defun org-babel-execute:scheme (body params)
@@ -1343,6 +1343,8 @@ For  all the programming modes, we want to apply a few defaults.
   (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
 #+END_SRC
 ** Ruby
+
+
 *** Configuration
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.rake\\'" . ruby-mode))
@@ -1401,6 +1403,7 @@ For  all the programming modes, we want to apply a few defaults.
 
 
 
+** Golang
 ** Scheme
 For scheme, we use [[http://geiser.nongnu.org/index.html#Top][Geiser]].
 *** Configuration

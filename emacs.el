@@ -1,4 +1,3 @@
-
 (defvar jp:base-dir (file-name-directory load-file-name)
   "The root dir of the Emacs distribution.")
 
@@ -20,7 +19,7 @@
 (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
-(package-initialize)
+;;(package-initialize)
 
 (when (not package-archive-contents)
   (package-refresh-contents))
@@ -69,6 +68,10 @@
     yaml-mode
     json-mode
 
+    ;; go
+    go
+    golint
+
     ;; ruby
     ruby-block
     ruby-end
@@ -104,6 +107,9 @@
 
 (set-default 'indent-tabs-mode nil)
 (set-default 'indicate-empty-lines t)
+
+(add-to-list 'load-path (concat (getenv "GOPATH")  "/src/github.com/golang/lint/misc/emacs"))
+(require 'golint)
 
 ;; nice scrolling
 (setq scroll-margin 0
@@ -790,7 +796,7 @@ SCHEDULED: %^t
  'org-babel-load-languages
  '((emacs-lisp . t)
    (scheme     . t)
-   (sh         . t)
+   (shell         . t)
    (clojure    . t)))
 
 (defun org-babel-execute:scheme (body params)
@@ -907,7 +913,7 @@ SCHEDULED: %^t
   (define-key global-map (kbd "RET") 'newline-and-indent)
   (setq-default tab-width 4) ;; default indentation
   (setq require-final-newline 't) ;; newline at EOF
-  
+
   (load-file "~/.emacs.d/indent-guide.el")
   (indent-guide-global-mode)
   (jp:add-watchwords))
@@ -1196,3 +1202,9 @@ SCHEDULED: %^t
 ;;(define-key cedet-m3-mode-map "\C-c "'cedet-m3-menu-kbd)
 
 (global-ede-mode 1)
+
+(add-hook 'go-mode-hook
+          (lambda ()
+            (add-hook 'before-save-hook 'gofmt-before-save)
+            (setq tab-width 4)
+            (setq indent-tabs-mode 1)))
